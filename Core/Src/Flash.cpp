@@ -57,7 +57,7 @@ HAL_StatusTypeDef Flash :: writeToPage(uint8_t* data, int dataSize)
 		index += sizeof(uint64_t);
 	}
 	LOG_DEBUGGER("successfully saved data in FILE: %s LINE: %d \r\n", __FILE__, __LINE__);
-	LOG_RUN("successfully saved %s\r\n","");
+	LOG_RUN("successfully saved\r\n");
 	HAL_FLASH_Lock();
 	return status;
 }

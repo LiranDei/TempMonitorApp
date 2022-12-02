@@ -24,7 +24,7 @@ void SdCard :: print(char* fileName)
 	{
 		LOG_RUN("%s\r", line);
 	}
-	printf("\r\n");
+	LOG_RUN("\r\n");
 
 	f_close(&_fil);
 	osMutexRelease(filMutexHandle);

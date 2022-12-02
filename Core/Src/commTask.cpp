@@ -89,5 +89,5 @@ void handleCommand()
 			return;
 	}
 
-	LOG_RUN("Invalid command %s\r\n", "");
+	LOG_RUN("Invalid command\r\n");
 }

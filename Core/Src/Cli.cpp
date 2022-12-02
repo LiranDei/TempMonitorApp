@@ -24,7 +24,7 @@ void SetFlashWarning :: doCommand(char* param)
 {
 	if(param == nullptr)
 	{
-		LOG_RUN("Please insert number %s\r\n", "");
+		LOG_RUN("Please insert number\r\n");
 	}
 	else
 	{
@@ -41,7 +41,7 @@ void SetFlashCritical :: doCommand(char* param)
 {
 	if(param == nullptr)
 	{
-		LOG_RUN("Please insert number %s\r\n", "");
+		LOG_RUN("Please insert number\r\n");
 	}
 	else
 	{
@@ -112,16 +112,16 @@ void SetRtcTime :: doCommand(char* param)
 		if(ret == 0)// its mean no error - valid parmeters.
 		{
 			rtc->rtcSetTime(&dateTime);
-			LOG_RUN("date successfully updated! %s\r\n","");
+			LOG_RUN("date successfully updated!\r\n");
 		}
 		else
 		{
-			LOG_RUN("not valid parameters %s \r\n","");
+			LOG_RUN("not valid parameters  \r\n");
 		}
 	}
 	else
 	{
-		LOG_RUN("please try again - bad input %s\r\n","");
+		LOG_RUN("please try again - bad input\r\n");
 	}
 }
 

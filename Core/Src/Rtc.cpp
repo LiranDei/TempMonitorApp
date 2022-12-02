@@ -60,11 +60,11 @@ HAL_StatusTypeDef Rtc :: rtcSetTime( DateTime * dateTime)
 	if(status != HAL_OK)
 	{
 		LOG_ERROR("save failed in rtc - FILE: %s, LINE: %d\r\n", __FILE__, __LINE__);
-		LOG_RUN("save failed - please try again %s\r\n", "");
+		LOG_RUN("save failed - please try again \r\n" );
 	}
 	else
 	{
-		LOG_RUN("sucessfully saved date %s\r\n", "");
+		LOG_RUN("sucessfully saved date\r\n");
 	}
 	return status;
 }

@@ -135,7 +135,7 @@ void LedTask(void *argument)
 			}
 			break;
 		default:
-			printf("default in file %s line %d\r\n", __FILE__, __LINE__);
+			LOG_ERROR("default in file %s line %d\r\n", __FILE__, __LINE__);
 		}
 
 		tempState >= WARNING ? osDelay(redLed->getPeriod()): osDelay(blueLed->getPeriod());
