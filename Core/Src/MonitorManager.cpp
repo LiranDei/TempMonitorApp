@@ -19,25 +19,27 @@
 #include "Flash.h"
 #include <stdio.h>
 
-#define ONE_SECOND 1000
-#define ONE_MINUTE 60000
-#define DHT_DEVICE_ADDR 0xD0
-#define MAX_SIZE_LOG_BUFFER 100
-#define THRESHOLDS_PAGE_256 0x08080000
-#define BANK_IN_USED 2
+
+enum{ONE_MINUTE = 60, MAX_SIZE_LOG_BUFFER = 100, ONE_SECOND = 1000, DHT_DEVICE_ADDR = 0xD0, THRESHOLDS_PAGE_256 = 0x08080000};
+
 extern  TIM_HandleTypeDef htim6;
 extern  TIM_HandleTypeDef htim3;
 extern  I2C_HandleTypeDef hi2c1;
+extern osSemaphoreId_t measureSemaphoreHandle;
+extern osSemaphoreId_t logSemaphoreHandle;
+
 Btn* rightBtn = new Btn(rightBtn_GPIO_Port, rightBtn_Pin);
 Dht* dht = new Dht(DHT_GPIO_Port, DHT_Pin, &htim6);
 Rtc* rtc = new Rtc(&hi2c1, DHT_DEVICE_ADDR);
 Buzzer* buzzer = new Buzzer (&htim3, TIM_CHANNEL_1);
-Flash* thresholdsFlash = new Flash (BANK_IN_USED, THRESHOLDS_PAGE_256, 1, FLASH_TYPEPROGRAM_DOUBLEWORD);
+Flash* thresholdsFlash = new Flash (THRESHOLDS_PAGE_256, 1, FLASH_TYPEPROGRAM_DOUBLEWORD);
 Container* container = new Container();
 LedGpio* blueLed = new LedGpio(blueLed_GPIO_Port, blueLed_Pin);
 LedGpio* redLed = new LedGpio(redLed_GPIO_Port, redLed_Pin);
 SdCard* logSdCard = new SdCard("Log.txt", "ErrorLog.txt");
+
 char logBuffer[MAX_SIZE_LOG_BUFFER];
+uint32_t timeKeep = 0;
 
 void monitorInit()
 {
@@ -59,16 +61,37 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) //when right btn pressed
 	}
 }
 
+void accurateMeasureTime(void *argument)
+{
+	int countSec = 0;
+	while(1)
+	{
+		if(HAL_GetTick() - timeKeep >= ONE_SECOND) // when second passed
+		{
+			timeKeep = HAL_GetTick();
+			osSemaphoreRelease(measureSemaphoreHandle);
+			countSec = (countSec + 1) % ONE_MINUTE;
+			if(countSec == 0) // when minute passed
+			{
+				osSemaphoreRelease(logSemaphoreHandle);
+			}
+		}
+		osDelay(1);
+	}
+
+}
+
 void measureTemp(void *argument)
 {
+	timeKeep = HAL_GetTick();
 	while(1)// this task measure every one second the temp.
 	{
-		if(dht->Dht_read() != HAL_OK)
+		osSemaphoreAcquire(measureSemaphoreHandle, osWaitForever);
+		if(dht->DhtRead() != HAL_OK)
 		{
 			LOG_ERROR("error in dht read in file %s line %d\r\n", __FILE__, __LINE__);
 		}
 
-		osDelay(ONE_SECOND - DHT_DELAY);
 	}
 }
 
@@ -79,13 +102,13 @@ void writeLog(void *argument)// this task write to the log file
 	logSdCard->mount();
 	while(1)
 	{
+		osSemaphoreAcquire(logSemaphoreHandle, osWaitForever);
 		updateLogBuffer();
 		logSdCard->write(logSdCard->getFileName(),logBuffer);
-		osDelay(ONE_MINUTE);
 	}
 }
 
-void LedTask(void *argument)
+void MonitorTask(void *argument)
 {
 	while(1)
 	{

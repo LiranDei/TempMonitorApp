@@ -8,10 +8,12 @@
 #ifndef INC_FLASH_H_
 #define INC_FLASH_H_
 #include "main.h"
+#include <stdio.h>
 
 #define DATA_IN_USED 0xDE
 #define DEFAULT_TEMP 50
 
+enum {PAGES_IN_BANK = 256, PAGE_SIZE = 2048, FLASH_START_ADDRESS = 0x08000000};
 enum SOUND_STATE{SOUND_ON, SOUND_CANCELD};
 enum TEMP_STATE{NORMAL, WARNING, CRITICAL};
 
@@ -34,13 +36,14 @@ private:
 	uint32_t _typeProgram;
 	THRESHOLDS _thresholds;
 public:
-	Flash(uint32_t bank, uint32_t pageAddr, uint32_t nbPage, uint32_t typeProgram)
+	Flash(uint32_t pageAddr, uint32_t nbPage, uint32_t typeProgram)
 	{
-		_bank = bank;
+		uint32_t page = (pageAddr - FLASH_START_ADDRESS) / PAGE_SIZE;
 		_pageAddr = pageAddr;
 		_nbPages = nbPage;
 		_typeProgram = typeProgram;
 		_thresholds = {0};
+		_bank = page < PAGES_IN_BANK? 1 : 2;
 	}
 
 	HAL_StatusTypeDef erasePage();

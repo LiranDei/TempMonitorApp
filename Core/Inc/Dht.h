@@ -33,7 +33,7 @@ public:
 	bool waitWhileEqual (int value, int expectedTime);
 	void setGpioOutput();
 	void setGpioInput();
-	int Dht_read();
+	int DhtRead();
 	double getTemp();
 };
 

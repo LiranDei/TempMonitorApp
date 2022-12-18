@@ -86,10 +86,27 @@ const osThreadAttr_t myTask05_attributes = {
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for myTask06 */
+osThreadId_t myTask06Handle;
+const osThreadAttr_t myTask06_attributes = {
+  .name = "myTask06",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for filMutex */
 osMutexId_t filMutexHandle;
 const osMutexAttr_t filMutex_attributes = {
   .name = "filMutex"
+};
+/* Definitions for measureSemaphore */
+osSemaphoreId_t measureSemaphoreHandle;
+const osSemaphoreAttr_t measureSemaphore_attributes = {
+  .name = "measureSemaphore"
+};
+/* Definitions for logSemaphore */
+osSemaphoreId_t logSemaphoreHandle;
+const osSemaphoreAttr_t logSemaphore_attributes = {
+  .name = "logSemaphore"
 };
 /* USER CODE BEGIN PV */
 
@@ -104,10 +121,11 @@ static void MX_I2C1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_SPI1_Init(void);
 void StartDefaultTask(void *argument);
-void commTask(void *argument);
-void measureTemp(void *argument);
-void LedTask(void *argument);
-void writeLog(void *argument);
+extern void commTask(void *argument);
+extern void measureTemp(void *argument);
+extern void MonitorTask(void *argument);
+extern void writeLog(void *argument);
+extern void accurateMeasureTime(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -172,6 +190,13 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* creation of measureSemaphore */
+  measureSemaphoreHandle = osSemaphoreNew(1, 1, &measureSemaphore_attributes);
+
+  /* creation of logSemaphore */
+  logSemaphoreHandle = osSemaphoreNew(1, 1, &logSemaphore_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -195,10 +220,13 @@ int main(void)
   myTask03Handle = osThreadNew(measureTemp, NULL, &myTask03_attributes);
 
   /* creation of myTask04 */
-  myTask04Handle = osThreadNew(LedTask, NULL, &myTask04_attributes);
+  myTask04Handle = osThreadNew(MonitorTask, NULL, &myTask04_attributes);
 
   /* creation of myTask05 */
   myTask05Handle = osThreadNew(writeLog, NULL, &myTask05_attributes);
+
+  /* creation of myTask06 */
+  myTask06Handle = osThreadNew(accurateMeasureTime, NULL, &myTask06_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -565,78 +593,6 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_commTask */
-/**
-* @brief Function implementing the myTask02 thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_commTask */
-__weak void commTask(void *argument)
-{
-  /* USER CODE BEGIN commTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END commTask */
-}
-
-/* USER CODE BEGIN Header_measureTemp */
-/**
-* @brief Function implementing the myTask03 thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_measureTemp */
-__weak void measureTemp(void *argument)
-{
-  /* USER CODE BEGIN measureTemp */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END measureTemp */
-}
-
-/* USER CODE BEGIN Header_LedTask */
-/**
-* @brief Function implementing the myTask04 thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_LedTask */
-__weak void LedTask(void *argument)
-{
-  /* USER CODE BEGIN LedTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END LedTask */
-}
-
-/* USER CODE BEGIN Header_writeLog */
-/**
-* @brief Function implementing the myTask05 thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_writeLog */
-__weak void writeLog(void *argument)
-{
-  /* USER CODE BEGIN writeLog */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END writeLog */
 }
 
 /**

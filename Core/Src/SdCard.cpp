@@ -13,7 +13,7 @@ extern osMutexId_t filMutexHandle;
 void SdCard :: print(char* fileName)
 {
 	osMutexAcquire(filMutexHandle, osWaitForever);
-	char line[100];
+	char line[LOG_MAX_SIZE];
 	_fres = f_open(&_fil, fileName, FA_READ|FA_OPEN_ALWAYS);
 	if(_fres != FR_OK)
 	{

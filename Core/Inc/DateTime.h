@@ -8,7 +8,7 @@
 #ifndef INC_DATETIME_H_
 #define INC_DATETIME_H_
 
-typedef struct DateTime
+struct DateTime
 {
 	uint8_t sec;
 	uint8_t min;
@@ -19,6 +19,6 @@ typedef struct DateTime
 	uint8_t year;
 	uint8_t spare;
 
-} DateTime;
+};
 
 #endif /* INC_DATETIME_H_ */

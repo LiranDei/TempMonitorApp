@@ -53,7 +53,7 @@ void Dht :: setGpioInput()
 	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 }
 
-int Dht :: Dht_read()
+int Dht :: DhtRead()
 {
 	setGpioOutput();
 

@@ -11,13 +11,10 @@
 #include <string.h>
 #include "fatfs.h"
 
-
-#define FILE_NAME_MAX_SIZE 50
-
-
 class SdCard
 {
 private:
+	enum {FILE_NAME_MAX_SIZE = 50, LOG_MAX_SIZE = 100};
 	char _fileName[FILE_NAME_MAX_SIZE];
 	char _errorFileName[FILE_NAME_MAX_SIZE];
 	FATFS _FatFs;
