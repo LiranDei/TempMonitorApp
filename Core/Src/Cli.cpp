@@ -8,6 +8,7 @@
 #include "stdlib.h"
 #include "Dht.h"
 #include "MonitorManager.h"
+#include "Clock.h"
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -18,6 +19,7 @@ extern Container* container;
 extern Rtc* rtc;
 extern Dht* dht;
 extern SdCard* logSdCard;
+extern Clock* clock;
 
 class SetFlashWarning : public ICommand
 {
@@ -84,8 +86,9 @@ class SetRtcTime : public ICommand
 {
 private:
 	Rtc* _rtc;
+	Clock* _clock;
 public:
-	SetRtcTime(const char* name, Rtc* rtc) : ICommand(name), _rtc(rtc){}
+	SetRtcTime(const char* name, Rtc* rtc, Clock* clock) : ICommand(name), _rtc(rtc), _clock(clock){}
 	void doCommand(char* param)
 	{
 		DateTime dateTime = {0};
@@ -136,6 +139,7 @@ public:
 				if(ret == 0)// its mean no error - valid parmeters.
 				{
 					rtc->rtcSetTime(&dateTime);
+					clock->setNewTime(dateTime.hours, dateTime.min, dateTime.sec);
 					LOG_RUN("date successfully updated!\r\n");
 				}
 				else
@@ -239,7 +243,7 @@ void Container :: registerCommand()
 	GetFlashInfo* getFlashInfo = new GetFlashInfo("getFlashInfo", thresholdsFlash);//print curr critical and warning
 	container->add(getFlashInfo);
 
-	SetRtcTime* setRtcTime = new SetRtcTime("setDate", rtc);
+	SetRtcTime* setRtcTime = new SetRtcTime("setDate", rtc, clock);
 	container->add(setRtcTime);
 
 	GetRtcTime* getRtcTime = new GetRtcTime("getDate", rtc);

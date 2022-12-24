@@ -40,7 +40,7 @@ extern "C" {
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 void measureTemp(void *argument);
 void monitorInit();
-void MonitorTask(void *argument);
+void monitorTask(void *argument);
 void writeLog(void *argument);
 void updateLogBuffer();
 void accurateMeasureTime(void *argument);

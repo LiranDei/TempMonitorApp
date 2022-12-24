@@ -53,7 +53,7 @@ void Dht :: setGpioInput()
 	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 }
 
-int Dht :: DhtRead()
+int Dht :: dhtRead()
 {
 	setGpioOutput();
 
@@ -122,7 +122,6 @@ int Dht :: DhtRead()
 	}
 
 	_temperature = (double)data[2] + ((double)data[3]) / 10;
-	//printf("Humidity: %d.%d, temp: %d.%d\r\n", (int)data[0], (int)data[1], (int)data[2], (int)data[3]);
 
 	// wait while DHT return to high
 	if (!waitWhileEqual(0, 100)) {

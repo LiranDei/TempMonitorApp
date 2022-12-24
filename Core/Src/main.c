@@ -84,13 +84,13 @@ osThreadId_t myTask05Handle;
 const osThreadAttr_t myTask05_attributes = {
   .name = "myTask05",
   .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for myTask06 */
 osThreadId_t myTask06Handle;
 const osThreadAttr_t myTask06_attributes = {
   .name = "myTask06",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for filMutex */
@@ -123,7 +123,7 @@ static void MX_SPI1_Init(void);
 void StartDefaultTask(void *argument);
 extern void commTask(void *argument);
 extern void measureTemp(void *argument);
-extern void MonitorTask(void *argument);
+extern void monitorTask(void *argument);
 extern void writeLog(void *argument);
 extern void accurateMeasureTime(void *argument);
 
@@ -220,7 +220,7 @@ int main(void)
   myTask03Handle = osThreadNew(measureTemp, NULL, &myTask03_attributes);
 
   /* creation of myTask04 */
-  myTask04Handle = osThreadNew(MonitorTask, NULL, &myTask04_attributes);
+  myTask04Handle = osThreadNew(monitorTask, NULL, &myTask04_attributes);
 
   /* creation of myTask05 */
   myTask05Handle = osThreadNew(writeLog, NULL, &myTask05_attributes);

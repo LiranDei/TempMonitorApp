@@ -16,7 +16,6 @@
 extern  UART_HandleTypeDef huart2;
 extern Container* container;
 #define MAX_BUFFER_LENGTH 100
-//#define MAX_COMMANDS 20
 
 uint8_t ch;
 uint8_t cmdbuffer[MAX_BUFFER_LENGTH];

@@ -16,6 +16,7 @@
 #include "Led.h"
 #include "cmsis_os.h"
 #include "Cli.h"
+#include "Clock.h"
 #include "Flash.h"
 #include <stdio.h>
 
@@ -37,6 +38,7 @@ Container* container = new Container();
 LedGpio* blueLed = new LedGpio(blueLed_GPIO_Port, blueLed_Pin);
 LedGpio* redLed = new LedGpio(redLed_GPIO_Port, redLed_Pin);
 SdCard* logSdCard = new SdCard("Log.txt", "ErrorLog.txt");
+Clock* clock; // clock for fix Rtc clock accuracy
 
 char logBuffer[MAX_SIZE_LOG_BUFFER];
 uint32_t timeKeep = 0;
@@ -45,8 +47,16 @@ void monitorInit()
 {
 	HAL_TIM_Base_Init(&htim6);
 	container->registerCommand(); // registers user command in the cli.cpp
+
 	thresholdsFlash->initThresHolds();// init warning and critical from the flash
 	thresholdsFlash->printThresHolds();// print critical and warning
+
+	DateTime dateTime;
+	rtc->rtcGetTime(&dateTime);
+	clock = new Clock(dateTime.hours, dateTime.min, dateTime.sec);// init clock Time
+
+	osSemaphoreAcquire(measureSemaphoreHandle, osWaitForever);
+	osSemaphoreAcquire(logSemaphoreHandle, osWaitForever);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) //when right btn pressed
@@ -63,16 +73,33 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) //when right btn pressed
 
 void accurateMeasureTime(void *argument)
 {
+
 	int countSec = 0;
 	while(1)
 	{
-		if(HAL_GetTick() - timeKeep >= ONE_SECOND) // when second passed
+		int time = HAL_GetTick() - timeKeep ;
+		if(time >= ONE_SECOND) // when second passed
 		{
+			++*clock;
+			if(time > ONE_SECOND)
+			{
+				printf("time = %d\r\n", time);
+			}
+
 			timeKeep = HAL_GetTick();
 			osSemaphoreRelease(measureSemaphoreHandle);
 			countSec = (countSec + 1) % ONE_MINUTE;
 			if(countSec == 0) // when minute passed
 			{
+				DateTime dateTime;
+				rtc->rtcGetTime(&dateTime);
+				if(dateTime.sec != clock->getSec()) // Fix Rtc's clock accuracy
+				{
+					dateTime.sec = clock->getSec();
+					dateTime.min = clock->getMin();
+					dateTime.hours = clock->getHour();
+					rtc->rtcSetTime(&dateTime);
+				}
 				osSemaphoreRelease(logSemaphoreHandle);
 			}
 		}
@@ -83,11 +110,11 @@ void accurateMeasureTime(void *argument)
 
 void measureTemp(void *argument)
 {
-	timeKeep = HAL_GetTick();
+
 	while(1)// this task measure every one second the temp.
 	{
 		osSemaphoreAcquire(measureSemaphoreHandle, osWaitForever);
-		if(dht->DhtRead() != HAL_OK)
+		if(dht->dhtRead() != HAL_OK)
 		{
 			LOG_ERROR("error in dht read in file %s line %d\r\n", __FILE__, __LINE__);
 		}
@@ -108,7 +135,7 @@ void writeLog(void *argument)// this task write to the log file
 	}
 }
 
-void MonitorTask(void *argument)
+void monitorTask(void *argument)
 {
 	while(1)
 	{
@@ -169,10 +196,11 @@ void MonitorTask(void *argument)
 
 void updateLogBuffer()
 {
+
 	DateTime dateTime;
 	rtc->rtcGetTime(&dateTime);
 	TEMP_STATE tempState = thresholdsFlash->getTempState();
-	//memset(logBuffer,0,sizeof(logBuffer));
+
 	switch(tempState)
 	{
 	case NORMAL:
@@ -196,6 +224,7 @@ void updateLogBuffer()
 	default:
 		LOG_DEBUGGER("Wrong status file: %s line: %d \r\n", __FILE__, __LINE__);
 	}
+
 }
 
 
